@@ -2382,42 +2382,12 @@ class OpenShift:
 
         return self._get_template("template=kebechet")
 
-    def schedule_si_bandit(
+    def schedule_security_indicators(
         self,
         python_package_name: str,
         python_package_version: str,
         python_package_index: str,
-        *,
-        job_id: Optional[str] = None,
-    ) -> Optional[str]:
-        """Schedule a bandit security indicator run."""
-        if not self.middletier_namespace:
-            raise ConfigurationError(
-                "Unable to schedule si-bandit without middletier namespace being set"
-            )
-
-        si_bandit_id = job_id or self.generate_id("si-bandit")
-        template_parameters = {}
-        template_parameters["THOTH_SI_BANDIT_JOB_ID"] = si_bandit_id
-        template_parameters["THOTH_SI_BANDIT_PACKAGE_NAME"] = python_package_name
-        template_parameters["THOTH_SI_BANDIT_PACKAGE_VERSION"] = python_package_version
-        template_parameters["THOTH_SI_BANDIT_PACKAGE_INDEX"] = python_package_index
-
-        workflow_parameters = self._assign_workflow_parameters_for_ceph()
-
-        return self._schedule_workflow(
-            workflow=self.workflow_manager.submit_si_bandit_workflow,
-            parameters={
-                "template_parameters": template_parameters,
-                "workflow_parameters": workflow_parameters,
-            },
-        )
-
-    def schedule_si_cloc(
-        self,
-        python_package_name: str,
-        python_package_version: str,
-        python_package_index: str,
+        aggregation_function: str,
         *,
         job_id: Optional[str] = None,
     ) -> Optional[str]:
@@ -2427,17 +2397,26 @@ class OpenShift:
                 "Unable to schedule si-cloc without middletier namespace being set"
             )
 
-        si_cloc_id = job_id or self.generate_id("si-cloc")
+        security_indicator_id = job_id or self.generate_id("security-indicators")
         template_parameters = {}
-        template_parameters["THOTH_SI_CLOC_JOB_ID"] = si_cloc_id
-        template_parameters["THOTH_SI_CLOC_PACKAGE_NAME"] = python_package_name
-        template_parameters["THOTH_SI_CLOC_PACKAGE_VERSION"] = python_package_version
-        template_parameters["THOTH_SI_CLOC_PACKAGE_INDEX"] = python_package_index
+        template_parameters["THOTH_SECURITY_INDICATORS_JOB_ID"] = security_indicator_id
+        template_parameters[
+            "THOTH_SECURITY_INDICATORS_PACKAGE_NAME"
+        ] = python_package_name
+        template_parameters[
+            "THOTH_SECURITY_INDICATORS_PACKAGE_VERSION"
+        ] = python_package_version
+        template_parameters[
+            "THOTH_SECURITY_INDICATORS_PACKAGE_INDEX"
+        ] = python_package_index
+        template_parameters[
+            "THOTH_SECURITY_INDICATORS_AGGREGATION_FUNCTION"
+        ] = aggregation_function
 
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
 
         return self._schedule_workflow(
-            workflow=self.workflow_manager.submit_si_cloc_workflow,
+            workflow=self.workflow_manager.submit_security_indicators_workflow,
             parameters={
                 "template_parameters": template_parameters,
                 "workflow_parameters": workflow_parameters,
